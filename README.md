@@ -1,8 +1,9 @@
 # typot
 
-Now release humans from checking the typos
-
 ![top.jpg](./docs/top.jpg)
+*photo from [independentman](https://flic.kr/p/2mHSE)*
+
+Now release humans from checking the typos
 
 ## How typot works
 
