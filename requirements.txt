@@ -1,3 +1,6 @@
 hug==2.3.0
 requests==2.14.2
 unidiff==0.5.3
+pyenchant==1.6.8
+PyJWT==1.5.0
+cryptography==1.8.2

@@ -25,5 +25,6 @@ def typot(body=None):
         if "comment means adoption of typo fix":
             # get previous comment from list of review comments
             # if comment is got, adopt it
+            pass
 
     return {"get_event": "xxxx"}

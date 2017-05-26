@@ -8,8 +8,8 @@ import typot.env as env
 class TestEnv(unittest.TestCase):
 
     def test_private_key(self):
-        key = env.get_private_key()
-        self.assertTrue(key)
+        pem = env.get_private_pem()
+        self.assertTrue(pem)
 
     def test_client_id_secret(self):
         client_id = env.get_client_id()

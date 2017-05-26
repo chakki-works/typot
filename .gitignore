@@ -102,3 +102,4 @@ ENV/
 
 typot.pem
 envs.json
+tests/test_installation_id.json
