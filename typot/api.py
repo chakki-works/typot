@@ -9,6 +9,12 @@ from typot.spell_checker import SpellChecker
 version = 1
 
 
+@hug.get("/ping", versions=version)
+@hug.local()
+def ping():
+    return {"ping": "works fine!"}
+
+
 @hug.post("/typot", versions=version)
 @hug.local()
 def typot(body=None):

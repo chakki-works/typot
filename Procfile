@@ -1,0 +1,1 @@
+web: hug -f typot/api.py
