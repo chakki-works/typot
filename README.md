@@ -30,3 +30,7 @@ After your checking, typot execute the fix automatically.
 So you don't need to check & fix typo yourself!  
 At the same time, your reviewer does not need to point out these.  
 It will suppresses boring code review that start from typos check!
+
+You can try these features from demo repository.
+
+[chakki-works/typot-demo](https://github.com/chakki-works/typot-demo)
