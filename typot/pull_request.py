@@ -1,9 +1,11 @@
 from io import StringIO
+import re
+import base64
 import requests
 from unidiff import PatchSet
 from unidiff.constants import LINE_TYPE_ADDED
 from typot.env import make_auth_header
-from typot.model import Line, FileContent
+from typot.model import Line, FileContent, Modification
 
 
 class PullRequest():
@@ -14,8 +16,9 @@ class PullRequest():
         no=-1, 
         owner="",
         repo="",
-        head_owner="", 
+        head_owner="",
         head_repo="",
+        head_ref="",
         diff_url="",
         installation_id=""
         ):
@@ -26,6 +29,7 @@ class PullRequest():
         self.repo = repo
         self.head_owner = head_owner
         self.head_repo = head_repo
+        self.head_ref = head_ref
         self.diff_url = diff_url
         self.installation_id = installation_id
     
@@ -52,9 +56,10 @@ class PullRequest():
         repo = pr["base"]["repo"]["name"]
         head_owner = pr["head"]["repo"]["owner"]["login"]
         head_repo = pr["head"]["repo"]["name"]
+        head_ref = pr["head"]["ref"]
         diff_url = pr["diff_url"]
 
-        return PullRequest(title, no, owner, repo, head_owner, head_repo, diff_url)
+        return PullRequest(title, no, owner, repo, head_owner, head_repo, head_ref, diff_url)
 
     def get_added(self):
         diff = requests.get(self.diff_url).content.decode("utf-8")
@@ -109,11 +114,88 @@ class PullRequest():
 
         return review_id
     
-    def apply_fix(self, description):
-        CONTENT_API = self.API_ROOT + "/repos/{}/{}/{}"
+    @classmethod
+    def read_modification(cls, review_comment_hook):
+        if "comment" not in review_comment_hook:
+            return None
+        comment_body = review_comment_hook["comment"]
+        file_path = comment_body["path"]
+        line_no = int(comment_body["position"])
+        body = comment_body["body"]
+        r = requests.get(comment_body["url"])
+        if r.ok:
+            body = r.json()["body"]  # get latest body
 
-        req = []
-        for m in modifications:
-            api = CONTENT_API.format(self.head_owner, self.head_repo, m.file_path)
-            r = requests.get(api)
-        pass
+        target_word = ""
+        candidates = []
+
+        words = re.search("\"(\w|-|_)+(\.|\?|\!)?\"", body)
+        if words is not None:
+            target_word = cls.__strip(words.group(0))
+        mods = re.search("\[x\]\s(\w|-|_)+\n", body)
+        if mods is not None:
+            c = mods.group(0)
+            c = c.strip().replace("[x] ", "")
+            candidates = [c]
+
+        if target_word and len(candidates) > 0:
+            m = Modification(file_path, line_no, target_word, candidates)
+            return m
+        else:
+            return None
+
+    @classmethod
+    def __strip(cls, word):
+        return word.replace("\"", "").replace("'", "").replace(".", "").replace("?", "").replace("!", "")
+
+    def push_modification(self, modification):
+        url = self.API_ROOT + "/repos/{}/{}/contents/{}".format(
+            self.head_owner, self.head_repo, modification.file_path
+        )
+
+        r = requests.get(url, params={"ref": self.head_ref})
+        if not r.ok:
+            raise Exception("Can not access to the {}/{}'s content.".format(
+                self.head_owner, self.head_repo
+            ))
+        encoding = r.encoding
+        body = r.json()
+        content = body["content"]
+        content = base64.b64decode(content).decode(encoding)
+        sha = body["sha"]
+        fix_position = int(modification.line_no) - 1  # read file lines start with 0
+        fixed = content
+        with StringIO(content) as c:
+            lines = c.readlines()
+            words = lines[fix_position].strip().split(" ")
+            for i, w in enumerate(words):
+                _w = self.__strip(w)
+                if _w == modification.target_word:
+                    words[i] = words[i].replace(_w, modification.candidates[0])
+            
+            fixed = " ".join(words) + "\n"
+            lines[fix_position] = fixed
+            fixed = "".join(lines)
+        
+        if content != fixed:
+            encoded = base64.b64encode(fixed.encode(encoding)).decode(encoding)
+            message = "fix typo: {} to {}, line {}".format(
+                modification.target_word,
+                modification.candidates[0],
+                modification.line_no
+                )
+
+            payload = {
+                "message": message,
+                "content": encoded,
+                "sha": sha,
+                "branch": self.head_ref
+            }
+            r = requests.put(url, json=payload,headers=make_auth_header(self.installation_id))
+
+            if not r.ok:
+                print(r.json())
+                r.raise_for_status()
+            return True
+        
+        return False

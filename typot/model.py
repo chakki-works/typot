@@ -22,7 +22,7 @@ class Modification():
 
     def __init__(self, file_path, line_no, target_word, candidates):
         self.file_path = file_path
-        self.line_no = line_no
+        self.line_no = line_no  # line no starts from 1
         self.target_word = target_word
         self.candidates = candidates
 

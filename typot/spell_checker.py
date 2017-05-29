@@ -18,9 +18,10 @@ class SpellChecker():
         words = [w.strip() for w in words]
 
         miss = {}
-        for w in words:
-            if not self.checker.check(w):
-                miss[w] = self.checker.suggest(w)[:5]  # up to five
+        if len(words) > 0:
+            for w in words:
+                if w and not self.checker.check(w):
+                    miss[w] = self.checker.suggest(w)[:5]  # up to five
         
         return miss
 

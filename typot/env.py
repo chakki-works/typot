@@ -1,6 +1,6 @@
 import os
 import json
-import datetime
+from datetime import datetime, timedelta
 import jwt
 import requests
 
@@ -25,10 +25,11 @@ def get_client_secret():
     return _get_env("CLIENT_SECRET")
 
 def make_auth_header(installation_id):
-
+    utcnow = datetime.utcnow() + timedelta(seconds=-5)
+    duration = timedelta(seconds=30)
     payload = {
-        "iat": datetime.datetime.utcnow(),
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=30),
+        "iat": utcnow,
+        "exp": utcnow + duration,
         "iss": 2510
     }
     pem = get_private_pem()

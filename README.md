@@ -9,12 +9,18 @@ Now release humans from checking the typos
 
 typot automatically check typos in your pull request.
 
-(image)
+![typo_review](./docs/typo_review_mid.png)
 
 The review results are registered as comments.
-If you want to adopt it, you just approve :+1: it.
+If you want to adopt it, you just check the candidates.
 
-(image)
+![auto_fix_0](./docs/autofix_0_mid.png)
+
+When you check the fix, the fix is automatically adopted to your pull request.
+
+![auto_fix_1](./docs/autofix_1_mid.png)
+
+![auto_fix_2](./docs/autofix_2_mid.png)
 
 It means you don't need to fix typo yourself. At the same time, your reviewer does not need to point out these. It suppresses boring code review that start from typos check!
 

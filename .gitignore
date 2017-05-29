@@ -100,6 +100,7 @@ ENV/
 # mypy
 .mypy_cache/
 
+.DS_Store
 typot.pem
 envs.json
 tests/test_installation_id.json
