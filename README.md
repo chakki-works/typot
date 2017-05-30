@@ -1,36 +1,21 @@
 # typot
 
-![top.jpg](./docs/top.jpg)
-*photo from [independentman](https://flic.kr/p/2mHSE)*
+**typot** detects the typos in your pull request, and fix it by just selecting the modification candidates.
 
-Now release humans from checking the typos.  
-The typot detects & fix typos in your pull request!
+![typot.gif](./docs/typot.gif)
+
+1. When you open the pull request, *typot* checks it and if there are typos, make review comments on it.
+2. If suitable fix is in suggested candidates, then select it! *typot* adopts it automatically. 
 
 ## Install
 
 **[Please Authorize typot from this Link!](https://github.com/apps/typot)**
 
-## How typot works
+## Dependencies
 
-typot automatically check typos in your pull request.
+* [hug](http://www.hug.rest/)
+* [PyEnchant](http://pythonhosted.org/pyenchant/)
+* [unidiff](https://github.com/matiasb/python-unidiff)
+* [PyJWT](https://github.com/jpadilla/pyjwt)
 
-![typo_review](./docs/typo_review_mid.png)
-
-The checked results are registered as review comments.  
-If you want to adopt it, please check the one from the candidates.
-
-![auto_fix_0](./docs/autofix_0_mid.png)
-
-After your checking, typot execute the fix automatically.
-
-![auto_fix_1](./docs/autofix_1_mid.png)
-
-![auto_fix_2](./docs/autofix_2_mid.png)
-
-So you don't need to check & fix typo yourself!  
-At the same time, your reviewer does not need to point out these.  
-It will suppresses boring code review that start from typos check!
-
-You can try these features from demo repository.
-
-[chakki-works/typot-demo](https://github.com/chakki-works/typot-demo)
+*icon's photo from [independentman](https://flic.kr/p/2mHSE)*
