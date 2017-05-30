@@ -25,11 +25,11 @@ def typot(body=None):
     if body["action"] == "opened" and "pull_request" in body:
         # open the pull request
         pr = PullRequest.create_from_hook(body)
-        file_contents = pr.get_added()
+        diff_contents = pr.get_added()
         checker = SpellChecker()
 
         modifications = []
-        for c in file_contents:
+        for c in diff_contents:
             file_modifications = checker.check(c)
             if len(file_modifications) > 0:
                 modifications += file_modifications

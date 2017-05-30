@@ -5,7 +5,8 @@ import requests
 from unidiff import PatchSet
 from unidiff.constants import LINE_TYPE_ADDED
 from typot.env import make_auth_header
-from typot.model import Line, FileContent, Modification
+from typot.model import Line, DiffContent, Modification
+from typot.spell_checker import SpellChecker
 
 
 class PullRequest():
@@ -63,25 +64,29 @@ class PullRequest():
 
     def get_added(self):
         diff = requests.get(self.diff_url).content.decode("utf-8")
+        return self._get_added(diff)
+    
+    @classmethod
+    def _get_added(cls, diff):
         patches = PatchSet(StringIO(diff))
         
-        file_contents = []
+        diff_contents = []
         for p in patches:
             if p.added > 0:
                 contents = []
                 for h in p:
-                    added = [
-                        Line(ln.target_line_no, ln.value) 
-                        for ln in h.target_lines() 
-                        if ln.line_type == LINE_TYPE_ADDED
-                        ]
+                    added = []
+                    for i, line in enumerate(h):
+                        if line.is_added:
+                            added_line = Line(line.target_line_no, line.value, i + 1)
+                            added.append(added_line)
                     contents += added
-                file_contents.append(
-                    FileContent(p.path, contents)
+                diff_contents.append(
+                    DiffContent(p.path, contents)
                     )
 
-        return file_contents
-    
+        return diff_contents        
+
     def make_review(self, modifications):
         url = self.API_ROOT + "/repos/{}/{}/pulls/{}/reviews".format(
             self.owner, self.repo, self.no
@@ -89,12 +94,13 @@ class PullRequest():
 
         comments = []
         for m in modifications:
-            body = "\"{}\" is typo? \n".format(m.target_word)
+            body = "\"{}\" at {} is typo? \n".format(m.target_word, m.line_no)
             body += "\n".join(["- [ ] {}".format(c) for c in m.candidates])
 
+            # comment should be done by relative no
             c = {
                 "path": m.file_path,
-                "position": m.line_no,
+                "position": m.relative_no,
                 "body": body
             }
             comments.append(c)
@@ -107,6 +113,7 @@ class PullRequest():
         }
         r = requests.post(url, json=payload, headers=make_auth_header(self.installation_id))
         if not r.ok:
+            print(payload)
             print(r.json())
             r.raise_for_status()
         else:
@@ -120,7 +127,7 @@ class PullRequest():
             return None
         comment_body = review_comment_hook["comment"]
         file_path = comment_body["path"]
-        line_no = int(comment_body["position"])
+        relative_no = int(comment_body["position"])
         body = comment_body["body"]
         r = requests.get(comment_body["url"])
         if r.ok:
@@ -129,9 +136,14 @@ class PullRequest():
         target_word = ""
         candidates = []
 
+        line_no = re.search("at\s\d+\sis", body)
+        if line_no is not None:
+            line_no = int(line_no.group(0).split()[1])
+        else:
+            line_no =relative_no
         words = re.search("\"(\w|-|_)+(\.|\?|\!)?\"", body)
         if words is not None:
-            target_word = cls.__strip(words.group(0))
+            target_word = words.group(0).replace("\"", "")
         mods = re.search("\[x\]\s(\w|-|_)+\n", body)
         if mods is not None:
             c = mods.group(0)
@@ -139,14 +151,10 @@ class PullRequest():
             candidates = [c]
 
         if target_word and len(candidates) > 0:
-            m = Modification(file_path, line_no, target_word, candidates)
+            m = Modification(file_path, line_no, relative_no, target_word, candidates)
             return m
         else:
             return None
-
-    @classmethod
-    def __strip(cls, word):
-        return word.replace("\"", "").replace("'", "").replace(".", "").replace("?", "").replace("!", "")
 
     def push_modification(self, modification):
         url = self.API_ROOT + "/repos/{}/{}/contents/{}".format(
@@ -167,9 +175,9 @@ class PullRequest():
         fixed = content
         with StringIO(content) as c:
             lines = c.readlines()
-            words = lines[fix_position].strip().split(" ")
+            words = lines[fix_position].split(" ")
             for i, w in enumerate(words):
-                _w = self.__strip(w)
+                _w = SpellChecker.strip(w.strip())
                 if _w == modification.target_word:
                     words[i] = words[i].replace(_w, modification.candidates[0])
             

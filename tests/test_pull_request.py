@@ -23,9 +23,9 @@ class TestPullRequest(unittest.TestCase):
     def test_get_added(self):
         pr_body = json.loads(dd.pull_request_created)
         pr = PullRequest.create_from_hook(pr_body)
-        file_contents = pr.get_added() 
-        print(file_contents)
-        self.assertEqual(len(file_contents), 1)
+        diff_contents = pr.get_added() 
+        print(diff_contents)
+        self.assertEqual(len(diff_contents), 1)
 
     def test_make_review(self):
         pr = PullRequest.create("chakki-works", "typot-demo", "3")

@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "../"))
 import unittest
-from typot.model import FileContent, Line
+from typot.model import DiffContent, Line
 from typot.spell_checker import SpellChecker
 
 
@@ -16,7 +16,7 @@ class TestSpellChecker(unittest.TestCase):
         print(missed)
 
     def test_spell_check(self):
-        f1 = FileContent("test1.md", [
+        f1 = DiffContent("test1.md", [
             Line(0, "I'm John."),
             Line(1, "I'm awesme singer."),
             Line(2, "Singer mst be star."),

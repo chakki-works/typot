@@ -1870,3 +1870,32 @@ fix_target_pr = r"""
   }
 }
 """
+
+diff_sample = """
+diff --git a/content.md b/content.md
+index b7ab025..67ea8f3 100644
+--- a/content.md
++++ b/content.md
+@@ -1,5 +1,7 @@
+ # Typot Demo Content
+ 
+ * Now release humans from checking the typos
+-* Now relase humans from checking the typos
++* Now release humans from checking the typos
+ * Now release humans fram checkingg the typos
++
++ohh, typos!
+"""
+
+diff_from_middle = """
+diff --git a/README.md b/README.md
+index dc3326a..ab9eb25 100644
+--- a/README.md
++++ b/README.md
+@@ -3,3 +3,5 @@
+ Typot automatically detect & fix typo!
+ 
+ You can try its feature on this repository.
++
++I made mistoke here.
+"""
