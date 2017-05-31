@@ -7,6 +7,8 @@
 1. When you open the pull request, *typot* checks it and if there are typos, make review comments on it.
 2. If suitable fix is in suggested candidates, then select it! *typot* adopts it automatically. 
 
+Now, README file and all `.md` and `.rst` files are check target.
+
 ## Install
 
 **[Please Authorize typot from this Link!](https://github.com/apps/typot)**

@@ -26,6 +26,7 @@ def typot(body=None):
         # open the pull request
         pr = PullRequest.create_from_hook(body)
         diff_contents = pr.get_added()
+        diff_contents = [df for df in diff_contents if is_target_content(df.file_path)]
         checker = SpellChecker()
 
         modifications = []
@@ -51,3 +52,12 @@ def typot(body=None):
                     response = {"message": "apply is not adopted"}
 
     return response
+
+
+def is_target_content(file_path):
+    file_name = os.path.basename(file_path)
+    file_base, ext = os.path.splitext(file_name)
+    if ext in [".rst", ".md"] or file_base.upper() == "README":
+        return True
+    else:
+        return False
